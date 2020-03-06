@@ -1,0 +1,141 @@
+[data-layout~='pad'] {
+	margin:-.25em;
+	>* {
+		margin:.25em;
+	}
+}
+
+[data-layout~='horizontal'] {
+
+	display:flex;
+	flex-direction:row;
+	justify-content:center;
+
+	&[data-layout~='baseline'] {
+		align-items:baseline;
+	}
+
+	&[data-layout~='center'] {
+		justify-content:center;
+	}
+
+	&[data-layout~='right'] {
+		justify-content:flex-end;
+	}
+
+	&[data-layout~='left'] {
+		justify-content:flex-start;
+	}
+
+	&[data-layout~='stretch'],
+	&[data-layout~='fill'] {
+		align-content:stretch;
+		flex-wrap:nowrap;
+		>* {
+			flex: 1 0 0;
+		}
+
+		// IE 11 fixes
+		>* {
+			width:100%
+		}
+	}
+
+	&[data-layout~='multi-line'] {
+		flex-wrap:wrap;
+	}
+
+	&[data-layout~='fit'] {
+		display:inline-flex;
+		flex-wrap:nowrap;
+		align-content:center;
+		white-space:nowrap;
+		justify-content:flex-start;
+	}
+}
+
+[data-layout~='vertical'] {
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+
+	&[data-layout~='top'] {
+		justify-content:flex-start;
+	}
+
+	&[data-layout~='bottom'] {
+		justify-content:flex-end;
+		min-height:100%;
+	}
+
+	&[data-layout~='middle'] {
+		justify-content:center;
+		min-height:100%;
+	}
+
+	&[data-layout~='left'] {
+		align-items:flex-start;
+	}
+
+	&[data-layout~='right'] {
+		align-items:flex-end;
+	}
+
+	&[data-layout~='center'] {
+		text-align:center;
+	}
+
+	&[data-layout~='stretch'],
+	&[data-layout~='fill'] {
+		align-items:stretch;
+		min-height:100%;
+		>* {
+			flex: 1 0 0;
+		}
+	}
+
+	>*+* {
+		margin-top:.5em;
+	}
+}
+
+[data-layout~='overlay'] {
+
+	position:relative;
+
+	> * {
+		margin:0;
+	}
+
+	&[data-layout~='center'] {
+		text-align:center;
+	}
+
+	&[data-layout~='left'] {
+		text-align:left;
+	}
+
+	&[data-layout~='right'] {
+		text-align:right;
+	}
+
+	>[data-overlay='stretch'],
+	>[data-overlay='fill'] {
+		position:absolute;
+		left:0;
+		right:0;
+		top:0;
+		bottom:0;
+	}
+
+	>[data-overlay='center'] {
+		display:flex;
+		align-items: center;
+		justify-content: center;
+		position:absolute;
+		left:0;
+		right:0;
+		top:0;
+		bottom:0;
+	}
+}

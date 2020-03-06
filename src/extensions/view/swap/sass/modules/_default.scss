@@ -1,0 +1,5 @@
+.tick-swap[data-style*='transition'] {
+	// prevents width changes when animating between empty space and characters
+	min-width:1ex;
+	text-align:center;
+}

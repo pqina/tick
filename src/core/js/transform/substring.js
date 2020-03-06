@@ -1,0 +1,1 @@
+export default (from, to) => (value, cb) => cb((value + '').substring(from, to));

@@ -1,0 +1,1 @@
+export default (character = '') => (string, cb) => cb((string + '').split(character));

@@ -1,0 +1,1 @@
+export default (template) => (value, cb) => cb(template.replace(/\$0/gi, value));

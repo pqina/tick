@@ -1,0 +1,1 @@
+export default (min = 0, max = 100) => (value, cb) => cb((parseFloat(value) - min) / (max - min));

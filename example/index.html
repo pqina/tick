@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width">
+    <title>Tick Example Preset</title>
+
+    <link rel="stylesheet" href="../dist/core/tick.core.min.css">
+    <link rel="stylesheet" href="../dist/view-swap/tick.view.swap.min.css">
+
+</head>
+<body>
+
+<!-- START OF TICK EXAMPLE PRESET -->
+
+<style>
+    .tick {
+        font-size:1rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    }
+    
+    .tick-label {
+        font-size:.375em;
+        text-align:center;
+    }
+
+    .tick-group {
+        margin:0 .25em;
+        text-align:center;
+    }
+
+    .tick-value {
+        font-variant-numeric: tabular-nums;
+        -webkit-font-feature-settings: "tnum";
+        font-feature-settings: "tnum";
+        font-family: Tahoma,Geneva,Verdana,sans-serif;
+    }
+</style>
+
+<div class="tick"
+     data-did-init="handleTickInit">
+
+    <div data-repeat="true"
+         data-layout="horizontal center fit"
+         data-transform="preset(d, h, m, s) -> delay">
+
+        <div class="tick-group">
+
+            <div data-key="value"
+                 data-repeat="true"
+                 data-transform="pad(00) -> split -> delay">
+
+                <span class="tick-value" data-view="swap"></span>
+
+            </div>
+
+            <span data-key="label"
+                  data-view="text"
+                  class="tick-label"></span>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+	function handleTickInit(tick) {
+
+        // Uncomment to set labels to different language ( in this case Dutch )
+        /*
+        var locale = {
+            YEAR_PLURAL: 'Jaren',
+            YEAR_SINGULAR: 'Jaar',
+            MONTH_PLURAL: 'Maanden',
+            MONTH_SINGULAR: 'Maand',
+            WEEK_PLURAL: 'Weken',
+            WEEK_SINGULAR: 'Week',
+            DAY_PLURAL: 'Dagen',
+            DAY_SINGULAR: 'Dag',
+            HOUR_PLURAL: 'Uren',
+            HOUR_SINGULAR: 'Uur',
+            MINUTE_PLURAL: 'Minuten',
+            MINUTE_SINGULAR: 'Minuut',
+            SECOND_PLURAL: 'Seconden',
+            SECOND_SINGULAR: 'Seconde',
+            MILLISECOND_PLURAL: 'Milliseconden',
+            MILLISECOND_SINGULAR: 'Milliseconde'
+        };
+
+        for (var key in locale) {
+            if (!locale.hasOwnProperty(key)) { continue; }
+            tick.setConstant(key, locale[key]);
+        }
+        */
+
+        var nextYear = (new Date()).getFullYear() + 1;
+        
+		Tick.count.down(nextYear + '-01-01').onupdate = function(value) {
+			tick.value = value;
+        };
+
+	}
+</script>
+
+<!-- END OF TICK EXAMPLE PRESET -->
+
+<script src="../dist/view-swap/tick.view.swap.global.min.js"></script>
+<script src="../dist/core/tick.core.kickstart.min.js"></script>
+
+</body>
+</html>

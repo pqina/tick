@@ -1,0 +1,1 @@
+export default (staticValue) => (value, cb) => cb(staticValue);

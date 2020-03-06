@@ -1,0 +1,1 @@
+export default () => (value, cb) => cb((Array.isArray(value) ? value.reverse() : (value + '').split('').reverse().join('')));

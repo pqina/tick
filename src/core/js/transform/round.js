@@ -1,0 +1,1 @@
+export default (decimals = 0) => (value, cb) => cb(decimals ? value.toFixed(decimals) : Math.round(value));

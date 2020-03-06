@@ -1,0 +1,89 @@
+.tick {
+
+	box-sizing:border-box;
+	* {
+		box-sizing:inherit;
+	}
+	
+	user-select:none;
+	cursor:default;
+	position:relative;
+	z-index:1;
+	line-height:1.4;
+
+	[data-view] {
+		max-width:100%;
+	}
+
+	span[data-view] {
+		display:inline-block;
+	}
+
+	// layout
+	@import 'modules/layout';
+
+}
+
+/* 
+
+// Default Visual Style
+
+
+.tick-text[data-style*='transition'] {
+	// prevents width changes when animating between empty space and characters
+	min-width:1ex;
+	text-align:center;
+}
+
+// flipper
+.tick-flip {
+
+	// distance from other possible flippers
+	margin-left:.0625em;
+	margin-right:.0625em;
+
+	// prevents width changes when animating between empty space and characters
+	min-width:1.125em;
+
+	// sets default border radius
+	border-radius:.125em;
+
+	// default spacing
+	letter-spacing: .25em;
+	text-indent: .25em;
+}
+
+.tick-flip-front,
+.tick-flip-back {
+	color:#eee;
+	background-color:#333;
+	box-shadow:0 .125em .3125em rgba(0,0,0,.25), 0 .02125em .06125em rgba(0,0,0,.25);
+}
+
+// matrix
+.tick-matrix-char {
+	margin:0 .05em;
+}
+
+.tick-matrix-pixel {
+	width:5px;
+	height:5px;
+	margin:1px;
+	background-color:currentColor;
+	border-radius:2px;
+}
+
+// meter (horizontal / vertical)
+.tick-meter-rail {
+	background-color:#eee;
+}
+
+.tick-meter-fill {
+	background-color:currentColor;
+}
+
+// meter (ring)
+.tick-meter canvas {
+
+}
+ */

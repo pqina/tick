@@ -1,0 +1,1 @@
+export default () => (value, cb) => cb(Math.floor(value));

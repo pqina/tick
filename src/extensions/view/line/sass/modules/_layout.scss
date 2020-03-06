@@ -1,0 +1,55 @@
+/**
+ * Bar
+ */
+.tick-line-rail {
+	display:block;
+	overflow:hidden;
+	position:relative;
+	transform:translateZ(0);
+}
+
+.tick-line-fill {
+	position:absolute;
+	height:100%;
+	width:100%;
+	backface-visibility:hidden;
+}
+
+.tick-line[data-style*='round'] {
+	.tick-line-fill,
+	.tick-line-rail {
+		border-radius:9999px;
+	}
+}
+
+.tick :not([data-style*='vertical']) .tick-line-rail {
+	min-width:2em;
+	min-height:.125em;
+	.tick-line-fill {
+		left:-100%;
+		top:0;
+	}
+}
+
+.tick [data-style*='vertical'] .tick-line-rail {
+	display:inline-block;
+	vertical-align:top;
+	min-height:2em;
+	min-width:.125em;
+	.tick-line-fill {
+		left:0;
+		top:100%;
+	}
+}
+
+/**
+ * Ring default styles
+ */
+.tick-line {
+	z-index:-1;
+	> canvas {
+		display:block;
+		width:100%; // enforces initial render size but is overwritten inline when drawn
+		max-width:100%; // enforces size after initial draw
+	}
+}

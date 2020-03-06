@@ -1,0 +1,1 @@
+export default (needle, replacement) => (string, cb) => cb((string + '').replace(new RegExp(needle === '.' ? '\\' + needle : needle,'g'), replacement))

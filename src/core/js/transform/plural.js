@@ -1,0 +1,1 @@
+export default  (single, plural) => (value, cb) => cb(value === 1 ? single : plural);
