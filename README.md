@@ -11,7 +11,7 @@ Some examples:
 
 ![](./line.gif)
 
-You can also use Tick to render [Flip counters](https://pqina.nl/flip/).
+You can also use Tick to create [Flip counters](https://pqina.nl/flip/)
 
 Made with ❤ By [Rik Schennink](https://twitter.com/rikschennink/)
 
