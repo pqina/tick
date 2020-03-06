@@ -23,17 +23,26 @@ You can also use Tick to create [Flip counters](https://pqina.nl/flip/)
 Made with ❤ By [Rik Schennink](https://twitter.com/rikschennink/)
 
 
-## Setup
-
-For now, see [example implementation](./example)
-
-
 ## Docs
 
-Information on how to customize Tick and use the Tick API can be found on the [product website](https://pqina.nl/tick/).
+Information on how to customize Tick and use the Tick API can be found on the [product website](https://pqina.nl/tick/). 
+
+See index below:
+
+- [Base](https://pqina.nl/tick/#tick)
+- [Layouts](https://pqina.nl/tick/#layouts)
+- [Views](https://pqina.nl/tick/#views)
+  - [Text](https://pqina.nl/tick/#text)
+  - [Swap](https://pqina.nl/tick/#swap)
+  - [Flip](https://pqina.nl/tick/#flip)
+  - [Dots](https://pqina.nl/tick/#dots)
+  - [Line](https://pqina.nl/tick/#line)
+  - [Boom](https://pqina.nl/tick/#boom)
+- [Transforms](https://pqina.nl/tick/#value-transforms)
+- [Transitions](https://pqina.nl/tick/#transitions)
 
 
-## Tutorial
+## Quick Introduction
 
 Building Tick Counters is very similar to building with Legos. Open the [example implementation](./example), clear the existing example, and follow along.
 
