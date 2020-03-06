@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+
+    <title>Drawing</title>
+
+    <link rel="stylesheet" href="../dist/core/tick.core.css">
+    <link rel="stylesheet" href="../dist/view-dots/tick.view.dots.css">
+
+    <style>
+        body {
+            padding:8em 3em;
+        }
+        .tick-dots-dot {
+            width:25px;
+            height:25px;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="tick"
+     data-value="8"
+     data-did-init="handleInit">
+    <div data-view="dots" data-style="font:lowres"></div>
+</div>
+
+<script>
+    function handleInit(tick) {
+    	setTimeout(() => {
+			tick.value = 9;
+        }, 2000);
+    }
+</script>
+
+<script src="../dist/font-lowres/tick.font.lowres.global.js"></script>
+<script src="../dist/view-dots/tick.view.dots.global.js"></script>
+<script src="../dist/core/tick.core.kickstart.js"></script>
+
+</body>
+</html>

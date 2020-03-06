@@ -1,7 +1,1 @@
-/.idea/
-/public/
-/node_modules/
-/tmp/
-/package/
-/dist/
-/test/
+node_modules/

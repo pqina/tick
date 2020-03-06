@@ -1,0 +1,49 @@
+/*
+ * tick v1.7.5 - Counters Made Easy
+ * Copyright (c) 2020 PQINA - http://pqina.nl/tick/
+ */
+.tick-dots {
+  vertical-align: middle;
+  white-space: nowrap; }
+  .tick-dots .tick-dots-display {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: row;
+        -ms-flex-direction: row;
+            flex-direction: row;
+    -webkit-flex-wrap: nowrap;
+        -ms-flex-wrap: nowrap;
+            flex-wrap: nowrap;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center; }
+  .tick-dots .tick-dots-character > div {
+    line-height: 0; }
+  .tick-dots .tick-dots-character > div > div {
+    display: inline-block;
+    -webkit-perspective: 4em;
+            perspective: 4em;
+    vertical-align: top; }
+  .tick-dots .tick-dots-dot {
+    display: block;
+    outline: 1px solid transparent; }
+  .tick-dots[data-style*='square'] .tick-dots-dot {
+    border-radius: 0 !important; }
+  .tick-dots[data-style*='round'] .tick-dots-dot,
+  .tick-dots[data-style*='circle'] .tick-dots-dot {
+    border-radius: 9999px !important; }
+
+.tick-dots-character {
+  margin: 0 .25em; }
+
+.tick-dots-dot {
+  width: 5px;
+  height: 5px;
+  margin: 1px;
+  background-color: currentColor;
+  border-radius: 2px; }
