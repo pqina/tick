@@ -2,6 +2,13 @@
 
 A ticker for declaritive building of countdowns and counters.
 
+Supports:
+
+- Counting towards a date
+- Counting up from a date
+- Scheduling multiple intervals
+- Polling a value from a server
+- Presenting a simple value
 
 Some examples:
 
