@@ -1,18 +1,31 @@
 {
-    "name": "tick",
+    "name": "@pqina/tick",
     "version": "1.7.5",
     "description": "Counters Made Easy",
-    "homepage": "http://pqina.nl/tick/",
-    "main": "index.js",
+    "homepage": "https://github.com/pqina/tick/",
+    "main": "dist/core/tick.core.module.js",
+    "repository": "pqina/tick",
+    "keywords": [
+        "javascript",
+        "countdown",
+        "countup",
+        "event",
+        "clock",
+        "animated"
+    ],
     "scripts": {
         "build": "gulp build",
         "test": "./node_modules/.bin/mocha --compilers js:babel-core/register"
     },
+    "files": [
+        "dist",
+        "tick"
+    ],
     "author": {
         "name": "PQINA",
-        "url": "http://pqina.nl/"
+        "url": "https://pqina.nl/"
     },
-    "license": "ISC",
+    "license": "MIT",
     "devDependencies": {
         "autoprefixer": "^6.0.3",
         "babel": "^6.5.2",
