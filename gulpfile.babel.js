@@ -68,8 +68,6 @@ types.forEach(type => {
     });
 });
 
-console.log(Extensions);
-
 var pkg = require('./package.json');
 pkg.year = new Date().getFullYear();
 

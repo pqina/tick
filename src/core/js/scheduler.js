@@ -539,9 +539,9 @@ export const getNextScheduledDate = (date, schedule) => {
 		.map(trim) // remove whitespace
 		.map(s => toMoment(date, s)); // string to moment in time
 
-
 	// calculate closest moment
 	let nearest = null;
+	
 	for (let i =0;i<moments.length;i++) {
 
 		const moment = moments[i];
@@ -551,10 +551,19 @@ export const getNextScheduledDate = (date, schedule) => {
 			return null;
 		}
 
-		if (nearest === null || moment.dist < nearest.dist) {
+		if (nearest === null) {
+			nearest = moment;
+		}
+
+		else if (nearest.dist === null && moment.dist !== null) {
+			nearest = moment;
+		}
+		
+		else if (moment.dist !== null && moment.dist < nearest.dist) {
 			nearest = moment;
 		}
 	}
+
 
 	// return nearest date
 	return nearest.date;

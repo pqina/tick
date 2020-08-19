@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 /*
- * @pqina/tick v1.7.5 - Counters Made Easy
+ * @pqina/tick v1.7.6 - Counters Made Easy
  * Copyright (c) 2020 PQINA - https://github.com/pqina/tick/
  */
 (function(root, plugins, undefined) {
@@ -4065,9 +4065,9 @@ var getNextScheduledDate = function getNextScheduledDate(date, schedule) {
 		return toMoment(date, s);
 	}); // string to moment in time
 
-
 	// calculate closest moment
 	var nearest = null;
+
 	for (var i = 0; i < moments.length; i++) {
 
 		var moment = moments[i];
@@ -4077,7 +4077,11 @@ var getNextScheduledDate = function getNextScheduledDate(date, schedule) {
 			return null;
 		}
 
-		if (nearest === null || moment.dist < nearest.dist) {
+		if (nearest === null) {
+			nearest = moment;
+		} else if (nearest.dist === null && moment.dist !== null) {
+			nearest = moment;
+		} else if (moment.dist !== null && moment.dist < nearest.dist) {
 			nearest = moment;
 		}
 	}

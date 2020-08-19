@@ -84,6 +84,18 @@ describe('Counter', () => {
 				output:null
 			},
 			{
+				input:'from 9 till 12 every hour, from 13 till 15 every hour',
+				output:null
+			},
+			{
+				input:'from 11 till 15 every hour, from 16 till 18 every hour',
+				output:[2017,0,1,13]
+			},
+			{
+				input:'from 9 till 11 every hour, from 12 till 15 every hour',
+				output:[2017,0,1,13]
+			},
+			{
 				date: addFiveMinutes(clone(DATE_DEFAULT)), // should wait
 				input:'every hour wait 10 minutes',
 				output:null
@@ -94,10 +106,10 @@ describe('Counter', () => {
 				input:'every day at 13',
 				output:[2017,0,1,13]
 			},
-      {
-        input:'at 13', // shorthand
-        output:[2017,0,1,13]
-      },
+			{
+				input:'at 13', // shorthand
+				output:[2017,0,1,13]
+			},
 			{
 				input:'every day at 13:15',
 				output:[2017,0,1,13,15]
@@ -110,10 +122,10 @@ describe('Counter', () => {
 				input:'every day at 11', // should jump to next day
 				output:[2017,0,2,11]
 			},
-      {
-        input:'at 11', // shorthand
-        output:[2017,0,2,11]
-      },
+			{
+				input:'at 11', // shorthand
+				output:[2017,0,2,11]
+			},
 			{
 				date: addFiveMinutes(clone(DATE_DEFAULT)),
 				input:'every day at 11 wait 2 hours', // should wait
@@ -133,6 +145,14 @@ describe('Counter', () => {
 				output:[2017,0,8,10]
 			},
 			{
+				input:'saturday at 10, monday at 10',
+				output:[2017,0,2,10]
+			},
+			{
+				input:'saturday at 10, wednesday at 10',
+				output:[2017,0,4,10]
+			},
+			{
 				date:addFiveMinutes(clone(DATE_DEFAULT)),
 				input:'every sunday at 11 wait 2 hours',
 				output:null
@@ -144,6 +164,10 @@ describe('Counter', () => {
 			{
 				input:'monday every hour',
 				output:[2017,0,2,0,0,0]
+			},
+			{
+				input:'saturday every hour, sunday every hour',
+				output:[2017,0,1,13]
 			},
 			{
 				input:'sunday every hour from 10 till 12',

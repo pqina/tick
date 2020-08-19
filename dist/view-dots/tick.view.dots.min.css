@@ -1,5 +1,5 @@
 /*
- * @pqina/tick v1.7.5 - Counters Made Easy
+ * @pqina/tick v1.7.6 - Counters Made Easy
  * Copyright (c) 2020 PQINA - https://github.com/pqina/tick/
  */
 .tick-dots{vertical-align:middle;white-space:nowrap}.tick-dots .tick-dots-display{display:-ms-flexbox;display:flex;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:nowrap;flex-wrap:nowrap;-ms-flex-pack:center;justify-content:center}.tick-dots .tick-dots-character>div{line-height:0}.tick-dots .tick-dots-character>div>div{display:inline-block;perspective:4em;vertical-align:top}.tick-dots .tick-dots-dot{display:block;outline:1px solid transparent}.tick-dots[data-style*=square] .tick-dots-dot{border-radius:0!important}.tick-dots[data-style*=circle] .tick-dots-dot,.tick-dots[data-style*=round] .tick-dots-dot{border-radius:9999px!important}.tick-dots-character{margin:0 .25em}.tick-dots-dot{width:5px;height:5px;margin:1px;background-color:currentColor;border-radius:2px}
