@@ -156,6 +156,10 @@ const getOptionsFromAttributes = (element, transfomers = {}, defaults = {}) => {
 
 	}
 
+	if (dataset.credits === 'false') {
+		options.credits = false;
+	}
+	
 	return options;
 };
 

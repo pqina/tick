@@ -21,6 +21,7 @@ export default class Tick {
 		this._constants = null;
 		this._presets = null;
 		this._updater = null;
+		this._credits = null;
 
 		// callback methods
 		this._didInit = null;
@@ -30,7 +31,6 @@ export default class Tick {
 
 		// initialise Tick
 		this._init();
-
 	}
 
 	/**
@@ -45,7 +45,11 @@ export default class Tick {
 			didInit: (tick) => {},
 			didUpdate: (tick, value) => {},
 			willDestroy: (tick) => {},
-			didDestroy: (tick) => {}
+			didDestroy: (tick) => {},
+			credits: {
+				label: 'Powered by PQINA',
+				url: 'https://pqina.nl/?ref=credits'
+			}
 		}
 	}
 
@@ -130,6 +134,7 @@ export default class Tick {
 		this._value = this._options.value;
 		this._presets = this._options.presets;
 		this._constants = this._options.constants;
+		this._credits = this._options.credits;
 
 		// no more use of options behind this line
 		// ---------------------------------------
@@ -170,6 +175,19 @@ export default class Tick {
 
 		// done with init
 		this._didInit(this, this.value);
+
+		// credits
+		if (this._credits) {
+			const credits = document.createElement('a');
+			credits.className = 'tick-credits';
+			credits.href = this._credits.url;
+			credits.tabindex = -1;
+			credits.target = '_blank';
+			credits.rel = 'noopener noreferrer';
+			credits.textContent = this._credits.label;
+			this._element.appendChild(credits);
+		}
+		
 	}
 
 	_update(value) {
