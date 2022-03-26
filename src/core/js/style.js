@@ -87,7 +87,7 @@ const toTransitionPartial = (string) => {
  */
 const toGradient = (string) => {
 	const type = string.match(/follow-gradient|horizontal-gradient|vertical-gradient/)[0];
-	const colors = string.substr(type.length).match(/(?:transparent|rgb\(.*?\)|hsl\(.*?\)|hsla\(.*?\)|rgba\(.*?\)|[a-z]+|#[abcdefABCDEF\d]+)\s?(?:[\d]{1,3}%?)?/g).map(toGradientColor);
+	const colors = string.slice(type.length).match(/(?:transparent|rgb\(.*?\)|hsl\(.*?\)|hsla\(.*?\)|rgba\(.*?\)|[a-z]+|#[abcdefABCDEF\d]+)\s?(?:[\d]{1,3}%?)?/g).map(toGradientColor);
 	return {
 		type,
 		colors

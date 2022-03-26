@@ -45,12 +45,12 @@ const toYearlyMoment = (date, string) => {
 
 		// if is time (at 12:00)
 		if (/^at/.test(part)) {
-			obj.time = toTime(clone(date), part.substr(3));
+			obj.time = toTime(clone(date), part.slice(3));
 		}
 
 		// is waiting period
 		else if (/wait/.test(part)) {
-			obj.idle = toInterval(part.substr(5));
+			obj.idle = toInterval(part.slice(5));
 		}
 
 		// must be month
@@ -175,12 +175,12 @@ const toMonthlyMoment = (date, string) => {
 
 		// if is time (at 12:00)
 		if (/^at/.test(part)) {
-			obj.time = toTime(clone(date), part.substr(3));
+			obj.time = toTime(clone(date), part.slice(3));
 		}
 
 		// is waiting period
 		else if (/wait/.test(part)) {
-			obj.idle = toInterval(part.substr(5));
+			obj.idle = toInterval(part.slice(5));
 		}
 
 		return obj;
@@ -304,12 +304,12 @@ const toWeeklyMoment = (date, string) => {
 
 		// if is time (at 12:00)
 		if (/^at/.test(part)) {
-			obj.time = toTime(clone(date), part.substr(3));
+			obj.time = toTime(clone(date), part.slice(3));
 		}
 
 		// is waiting period
 		else if (/wait/.test(part)) {
-			obj.idle = toInterval(part.substr(5));
+			obj.idle = toInterval(part.slice(5));
 		}
 
 		return obj;
@@ -391,7 +391,7 @@ const toDailyMoment = (date, string) => {
 
 		// is waiting period
 		else if (/wait/.test(part)) {
-			obj.idle = toInterval(part.substr(5));
+			obj.idle = toInterval(part.slice(5));
 		}
 
 		return obj;
@@ -448,7 +448,7 @@ const toHourlyMoment = (date, string) => {
 
 		// is waiting period
 		else if (/wait/.test(part)) {
-			obj.idle = toInterval(part.substr(5));
+			obj.idle = toInterval(part.slice(5));
 		}
 
 		// if is interval
