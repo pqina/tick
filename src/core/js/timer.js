@@ -67,6 +67,9 @@ export const setTimer = (cb, interval = 1000, options = {}) => {
 			cb(0);
 		}, 0);
 
+		// the moment the timeout should end
+		tickExpectedTime = now() + interval;
+
 		// listen for changes in visibility
 		startListeningForVisibilityChanges();
 		
@@ -75,9 +78,6 @@ export const setTimer = (cb, interval = 1000, options = {}) => {
 			didHideDocument();
 			return;
 		}
-		
-		// the moment the timeout should end
-		tickExpectedTime = now() + interval;
 		
 		// start ticking
 		timer = setTimeout(() => {
