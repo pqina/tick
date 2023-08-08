@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 /*
- * @pqina/tick v1.8.0 - Counters Made Easy
+ * @pqina/tick v1.8.1 - Counters Made Easy
  * Copyright (c) 2023 PQINA - https://github.com/pqina/tick/
  */
 define(function() {
