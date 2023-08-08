@@ -2,7 +2,7 @@
 
 /*
  * @pqina/tick v1.8.0 - Counters Made Easy
- * Copyright (c) 2020 PQINA - https://github.com/pqina/tick/
+ * Copyright (c) 2023 PQINA - https://github.com/pqina/tick/
  */
 (function(root, plugins, undefined) {
 	'use strict';
