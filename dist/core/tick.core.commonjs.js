@@ -3391,6 +3391,9 @@ var setTimer = function setTimer(cb) {
 			cb(0);
 		}, 0);
 
+		// the moment the timeout should end
+		tickExpectedTime = now$2() + interval;
+
 		// listen for changes in visibility
 		startListeningForVisibilityChanges();
 
@@ -3399,9 +3402,6 @@ var setTimer = function setTimer(cb) {
 			didHideDocument();
 			return;
 		}
-
-		// the moment the timeout should end
-		tickExpectedTime = now$2() + interval;
 
 		// start ticking
 		timer = setTimeout(function () {
