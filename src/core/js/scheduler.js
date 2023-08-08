@@ -1,145 +1,159 @@
-import { capitalizeFirstLetter, trim, toInt } from './utils';
-import { Days, TimeUnit, setMonth, clone, setTime, setDay, setDayOfMonth, sameDate } from './date';
+import { capitalizeFirstLetter, trim, toInt } from "./utils";
+import {
+  Days,
+  TimeUnit,
+  setMonth,
+  clone,
+  setTime,
+  setDay,
+  setDayOfMonth,
+  sameDate,
+} from "./date";
 
 const toInterval = (string) => {
-	if (!/^[\d]+/.test(string)) {
-		string = '1 ' + string;
-	}
-	const parts = string.split(' ');
-	return parseFloat(parts[0]) * TimeUnit[parts[1].toLowerCase()];
+  if (!/^[\d]+/.test(string)) {
+    string = "1 " + string;
+  }
+  const parts = string.split(" ");
+  return parseFloat(parts[0]) * TimeUnit[parts[1].toLowerCase()];
 };
 
 const toTime = (date, time) => {
-	return setTime(date, time.split(':').map(toInt));
+  return setTime(date, time.split(":").map(toInt));
 };
 
 const toYearlyMoment = (date, string) => {
-
-	/*
+  /*
 	 every 1st of november at 12:00
 	 every 25th of november at 13:00 wait 10 seconds
 	 every 25th of november from 10 till 15 every 10 minutes
 	 */
 
-	const parts = string.match(/januari|februari|march|april|may|june|july|august|september|october|november|december|[\d]+th|\dst|\dnd|first|last|at\s[\d]+(?::[\d]+)?(?::[\d]+)?/g);
+  const parts = string.match(
+    /januari|februari|march|april|may|june|july|august|september|october|november|december|[\d]+th|\dst|\dnd|first|last|at\s[\d]+(?::[\d]+)?(?::[\d]+)?/g
+  );
 
-	// no `at time` supplied
-	if (parts.length > 1) {
-		let rest = '';
-		parts.forEach(p => {
-			rest = string.split(p)[1] || '';
-		});
-		const wait = rest.trim().match(/wait\s[\d]+\s[a-z]+/);
-		if (wait) {
-			parts.push(wait[0]);
-		}
-	}
+  // no `at time` supplied
+  if (parts.length > 1) {
+    let rest = "";
+    parts.forEach((p) => {
+      rest = string.split(p)[1] || "";
+    });
+    const wait = rest.trim().match(/wait\s[\d]+\s[a-z]+/);
+    if (wait) {
+      parts.push(wait[0]);
+    }
+  }
 
-	// to moment object
-	const moment = parts.reduce((obj, part) => {
+  // to moment object
+  const moment = parts.reduce(
+    (obj, part) => {
+      // is month day (1st, 2nd, 12th, first, last)
+      if (/([\d]+th|\dst|\dnd|first|last)/.test(part)) {
+        obj.day = /^[\d]/.test(part)
+          ? parseInt(part, 10)
+          : part === "first"
+          ? 1
+          : part;
+      }
 
-		// is month day (1st, 2nd, 12th, first, last)
-		if (/([\d]+th|\dst|\dnd|first|last)/.test(part)) {
-			obj.day = /^[\d]/.test(part) ? parseInt(part, 10) : part === 'first' ? 1 : part;
-		}
+      // if is time (at 12:00)
+      if (/^at/.test(part)) {
+        obj.time = toTime(clone(date), part.substring(3));
+      }
 
-		// if is time (at 12:00)
-		if (/^at/.test(part)) {
-			obj.time = toTime(clone(date), part.substr(3));
-		}
+      // is waiting period
+      else if (/wait/.test(part)) {
+        obj.idle = toInterval(part.substring(5));
+      }
 
-		// is waiting period
-		else if (/wait/.test(part)) {
-			obj.idle = toInterval(part.substr(5));
-		}
+      // must be month
+      else if (/^[\a-zA-Z]+$/.test(part)) {
+        obj.month = part;
+      }
 
-		// must be month
-		else if (/^[\a-zA-Z]+$/.test(part)) {
-			obj.month = part;
-		}
+      return obj;
+    },
+    {
+      idle: null,
+      day: null,
+      month: null,
+      time: null,
+      date: null,
+      dist: null,
+      wait: false,
+    }
+  );
 
-		return obj;
-	},{
-		idle: null,
-		day: null,
-		month: null,
-		time: null,
-		date: null,
-		dist: null,
-		wait: false
-	});
+  if (!moment.time) {
+    // set to day
+    // move to first day (so when the month changes its not accidentally out of range)
+    moment.time = clone(date);
+    moment.time.setDate(1);
+    moment.time = setMonth(moment.time, moment.month);
+    moment.time = setDayOfMonth(moment.time, moment.day);
 
-	if (!moment.time) {
+    // if so get first valid date and use that for time
+    const hourlyMoment = toHourlyMoment(moment.time, string);
 
-		// set to day
-		// move to first day (so when the month changes its not accidentally out of range)
-		moment.time = clone(date);
-		moment.time.setDate(1);
-		moment.time = setMonth(moment.time, moment.month);
-		moment.time = setDayOfMonth(moment.time, moment.day);
+    // waiting
+    if (hourlyMoment.wait) {
+      return moment;
+    }
 
-		// if so get first valid date and use that for time
-		const hourlyMoment = toHourlyMoment(moment.time, string);
+    // copy either date or from time
+    moment.time = clone(
+      sameDate(date, moment.time) && hourlyMoment.date
+        ? hourlyMoment.date
+        : hourlyMoment.from
+    );
 
-		// waiting
-		if (hourlyMoment.wait) {
-			return moment;
-		}
+    // test if has already passed, if so, set to hourly from for next month
+    let dist = moment.time - date;
+    if (dist < 0) {
+      // move to next year
+      moment.time = clone(hourlyMoment.from);
+      moment.time.setFullYear(moment.time.getFullYear() + 1);
 
-		// copy either date or from time
-		moment.time = clone(sameDate(date, moment.time) && hourlyMoment.date ? hourlyMoment.date : hourlyMoment.from);
+      // recalculate distance
+      dist = moment.time - date;
+    }
 
-		// test if has already passed, if so, set to hourly from for next month
-		let dist = moment.time - date;
-		if (dist < 0) {
+    moment.dist = dist;
+  } else {
+    // correct time to given month
+    moment.time.setDate(1);
+    moment.time = setMonth(moment.time, moment.month);
+    moment.time = setDayOfMonth(moment.time, moment.day);
 
-			// move to next year
-			moment.time = clone(hourlyMoment.from);
-			moment.time.setFullYear(moment.time.getFullYear() + 1);
+    let dist = moment.time - date;
+    let distOverflow = 0;
+    if (dist < 0) {
+      distOverflow = dist;
 
-			// recalculate distance
-			dist = moment.time - date;
-		}
+      // move to next year
+      moment.time.setFullYear(moment.time.getFullYear() + 1);
 
-		moment.dist = dist;
-	}
-	else {
+      // recalculate distance
+      dist = moment.time - date;
+    }
 
-		// correct time to given month
-		moment.time.setDate(1);
-		moment.time = setMonth(moment.time, moment.month);
-		moment.time = setDayOfMonth(moment.time, moment.day);
+    // get total time from today to next moment
+    if (moment.idle !== null && distOverflow + moment.idle > 0) {
+      moment.wait = true;
+      return moment;
+    }
 
-		let dist = moment.time - date;
-		let distOverflow = 0;
-		if (dist < 0) {
+    moment.dist = dist;
+  }
 
-			distOverflow = dist;
+  moment.date = clone(moment.time);
 
-			// move to next year
-			moment.time.setFullYear(moment.time.getFullYear() + 1);
-
-			// recalculate distance
-			dist = moment.time - date;
-		}
-
-		// get total time from today to next moment
-		if (moment.idle !== null && distOverflow + moment.idle > 0) {
-			moment.wait = true;
-			return moment;
-		}
-
-		moment.dist = dist;
-	}
-
-	moment.date = clone(moment.time);
-
-	return moment;
+  return moment;
 };
 
 const toMonthlyMoment = (date, string) => {
-
-	/*
+  /*
 	 every month on the 1st day
 	 every month on the first day
 	 every month on day the 12th
@@ -152,419 +166,432 @@ const toMonthlyMoment = (date, string) => {
 	 every 20th day of the month from 10 till 14 every hour
 	 */
 
-	const parts = string.match(/[\d]+th|\dst|\dnd|first|last|at\s[\d]+(?::[\d]+)?(?::[\d]+)?/g);
+  const parts = string.match(
+    /[\d]+th|\dst|\dnd|first|last|at\s[\d]+(?::[\d]+)?(?::[\d]+)?/g
+  );
 
-	// no `at time` supplied
-	if (parts.length > 1) {
-		let rest = '';
-		parts.forEach(p => {
-			rest = string.split(p)[1] || '';
-		});
-		const wait = rest.trim().match(/wait\s[\d]+\s[a-z]+/);
-		if (wait) {
-			parts.push(wait[0]);
-		}
-	}
+  // no `at time` supplied
+  if (parts.length > 1) {
+    let rest = "";
+    parts.forEach((p) => {
+      rest = string.split(p)[1] || "";
+    });
+    const wait = rest.trim().match(/wait\s[\d]+\s[a-z]+/);
+    if (wait) {
+      parts.push(wait[0]);
+    }
+  }
 
-	const moment = parts.reduce((obj, part) => {
+  const moment = parts.reduce(
+    (obj, part) => {
+      // is month day (1st, 2nd, 12th, first, last)
+      if (/([\d]+th|\dst|\dnd|first|last)/.test(part)) {
+        obj.day = /^[\d]/.test(part)
+          ? parseInt(part, 10)
+          : part === "first"
+          ? 1
+          : part;
+      }
 
-		// is month day (1st, 2nd, 12th, first, last)
-		if (/([\d]+th|\dst|\dnd|first|last)/.test(part)) {
-			obj.day = /^[\d]/.test(part) ? parseInt(part, 10) : part === 'first' ? 1 : part;
-		}
+      // if is time (at 12:00)
+      if (/^at/.test(part)) {
+        obj.time = toTime(clone(date), part.substring(3));
+      }
 
-		// if is time (at 12:00)
-		if (/^at/.test(part)) {
-			obj.time = toTime(clone(date), part.substr(3));
-		}
+      // is waiting period
+      else if (/wait/.test(part)) {
+        obj.idle = toInterval(part.substring(5));
+      }
 
-		// is waiting period
-		else if (/wait/.test(part)) {
-			obj.idle = toInterval(part.substr(5));
-		}
+      return obj;
+    },
+    {
+      idle: null,
+      day: null,
+      time: null,
+      date: null,
+      dist: null,
+      wait: false,
+    }
+  );
 
-		return obj;
-	},{
-		idle: null,
-		day: null,
-		time: null,
-		date: null,
-		dist: null,
-		wait: false
-	});
+  if (!moment.time) {
+    // set to day
+    moment.time = setDayOfMonth(clone(date), moment.day);
 
-	if (!moment.time) {
+    // if so get first valid date and use that for time
+    const hourlyMoment = toHourlyMoment(moment.time, string);
 
-		// set to day
-		moment.time = setDayOfMonth(clone(date), moment.day);
+    // waiting
+    if (hourlyMoment.wait) {
+      return moment;
+    }
 
-		// if so get first valid date and use that for time
-		const hourlyMoment = toHourlyMoment(moment.time, string);
+    // copy either date or from time
+    moment.time = clone(
+      sameDate(date, moment.time) && hourlyMoment.date
+        ? hourlyMoment.date
+        : hourlyMoment.from
+    );
 
-		// waiting
-		if (hourlyMoment.wait) {
-			return moment;
-		}
+    // test if has already passed, if so, set to hourly from for next month
+    let dist = moment.time - date;
+    if (dist < 0) {
+      // move to next month (set to first day of month)
+      moment.time = clone(hourlyMoment.from);
+      moment.time.setDate(1);
+      moment.time.setMonth(moment.time.getMonth() + 1);
 
-		// copy either date or from time
-		moment.time = clone(sameDate(date, moment.time) && hourlyMoment.date ? hourlyMoment.date : hourlyMoment.from);
+      // now set to expected day
+      setDayOfMonth(moment.time, moment.day);
 
-		// test if has already passed, if so, set to hourly from for next month
-		let dist = moment.time - date;
-		if (dist < 0) {
+      // recalculate distance
+      dist = moment.time - date;
+    }
 
-			// move to next month (set to first day of month)
-			moment.time = clone(hourlyMoment.from);
-			moment.time.setDate(1);
-			moment.time.setMonth(moment.time.getMonth() + 1);
+    moment.dist = dist;
+  } else {
+    // correct time to set week day
+    moment.time = setDayOfMonth(moment.time, moment.day);
 
-			// now set to expected day
-			setDayOfMonth(moment.time, moment.day);
+    let dist = moment.time - date;
+    let distOverflow = 0;
+    if (dist < 0) {
+      distOverflow = dist;
 
-			// recalculate distance
-			dist = moment.time - date;
-		}
+      // move to next month (set to first day of month)
+      moment.time.setDate(1);
+      moment.time.setMonth(moment.time.getMonth() + 1);
 
-		moment.dist = dist;
-	}
-	else {
+      // now set to expected day
+      setDayOfMonth(moment.time, moment.day);
 
-		// correct time to set week day
-		moment.time = setDayOfMonth(moment.time, moment.day);
+      // recalculate distance
+      dist = moment.time - date;
+    }
 
-		let dist = moment.time - date;
-		let distOverflow = 0;
-		if (dist < 0) {
+    // get total time from today to next moment
+    if (moment.idle !== null && distOverflow + moment.idle > 0) {
+      moment.wait = true;
+      return moment;
+    }
 
-			distOverflow = dist;
+    moment.dist = dist;
+  }
 
-			// move to next month (set to first day of month)
-			moment.time.setDate(1);
-			moment.time.setMonth(moment.time.getMonth() + 1);
+  moment.date = clone(moment.time);
 
-			// now set to expected day
-			setDayOfMonth(moment.time, moment.day);
-
-			// recalculate distance
-			dist = moment.time - date;
-		}
-
-		// get total time from today to next moment
-		if (moment.idle !== null && distOverflow + moment.idle > 0) {
-			moment.wait = true;
-			return moment;
-		}
-
-		moment.dist = dist;
-	}
-
-	moment.date = clone(moment.time);
-
-	return moment;
+  return moment;
 };
 
 const toWeeklyMoment = (date, string) => {
+  // - every wednesday at 12:00
+  // - every wednesday at 12:00 wait 10 minutes
+  // - wednesday every hour
+  // - wednesday from 10 till 14 every hour
+  // - wednesday 12:00, thursday 14:00
+  // - tuesday 10:00 wait 2 hours
+  // - tuesday 10:00 wait 2 hours, saturday 10:00 wait 2 hours
+  // - every tuesday every 5 minutes
+  // - wednesday from 10 till 14 every hour
+  // - every tuesday every 5 minutes wait 10 seconds
+  // - every tuesday from 10 till 12 every 5 minutes wait 10 seconds
+  // - every tuesday every 5 minutes from 10 till 12 wait 10 seconds
+  // - every tuesday at 12:00 wait 5 minutes
 
-	// - every wednesday at 12:00
-	// - every wednesday at 12:00 wait 10 minutes
-	// - wednesday every hour
-	// - wednesday from 10 till 14 every hour
-	// - wednesday 12:00, thursday 14:00
-	// - tuesday 10:00 wait 2 hours
-	// - tuesday 10:00 wait 2 hours, saturday 10:00 wait 2 hours
-	// - every tuesday every 5 minutes
-	// - wednesday from 10 till 14 every hour
-	// - every tuesday every 5 minutes wait 10 seconds
-	// - every tuesday from 10 till 12 every 5 minutes wait 10 seconds
-	// - every tuesday every 5 minutes from 10 till 12 wait 10 seconds
-	// - every tuesday at 12:00 wait 5 minutes
+  // strip week part and then feed rest to toDaily() or Hourly() method
+  const parts = string.match(
+    /(?:mon|tues|wednes|thurs|fri|satur|sun)day|at\s[\d]+(?::[\d]+)?(?::[\d]+)?/g
+  );
 
-	// strip week part and then feed rest to toDaily() or Hourly() method
-	const parts = string.match(/(?:mon|tues|wednes|thurs|fri|satur|sun)day|at\s[\d]+(?::[\d]+)?(?::[\d]+)?/g);
+  // no `at time` supplied
+  if (parts.length > 1) {
+    let rest = "";
+    parts.forEach((p) => {
+      rest = string.split(p)[1] || "";
+    });
+    const wait = rest.trim().match(/wait\s[\d]+\s[a-z]+/);
+    if (wait) {
+      parts.push(wait[0]);
+    }
+  }
 
-	// no `at time` supplied
-	if (parts.length > 1) {
-		let rest = '';
-		parts.forEach(p => {
-			rest = string.split(p)[1] || '';
-		});
-		const wait = rest.trim().match(/wait\s[\d]+\s[a-z]+/);
-		if (wait) {
-			parts.push(wait[0]);
-		}
-	}
+  // to moment object
+  const moment = parts.reduce(
+    (obj, part) => {
+      // is day
+      if (/(?:mon|tues|wednes|thurs|fri|satur|sun)day/.test(part)) {
+        obj.day = Days[capitalizeFirstLetter(part)];
+      }
 
-	// to moment object
-	const moment = parts.reduce((obj, part) => {
+      // if is time (at 12:00)
+      if (/^at/.test(part)) {
+        obj.time = toTime(clone(date), part.substring(3));
+      }
 
-		// is day
-		if (/(?:mon|tues|wednes|thurs|fri|satur|sun)day/.test(part)) {
-			obj.day = Days[capitalizeFirstLetter(part)];
-		}
+      // is waiting period
+      else if (/wait/.test(part)) {
+        obj.idle = toInterval(part.substring(5));
+      }
 
-		// if is time (at 12:00)
-		if (/^at/.test(part)) {
-			obj.time = toTime(clone(date), part.substr(3));
-		}
+      return obj;
+    },
+    {
+      idle: null,
+      day: null,
+      time: null,
+      date: null,
+      dist: null,
+      wait: false,
+    }
+  );
 
-		// is waiting period
-		else if (/wait/.test(part)) {
-			obj.idle = toInterval(part.substr(5));
-		}
+  // if no time set see if a hourly period was defined
+  if (!moment.time) {
+    // set to day
+    moment.time = setDay(clone(date), moment.day);
 
-		return obj;
-	},{
-		idle: null,
-		day: null,
-		time: null,
-		date: null,
-		dist: null,
-		wait: false
-	});
+    // if so get first valid date and use that for time
+    const hourlyMoment = toHourlyMoment(moment.time, string);
 
-	// if no time set see if a hourly period was defined
-	if (!moment.time) {
+    // waiting
+    if (hourlyMoment.wait) {
+      return moment;
+    }
 
-		// set to day
-		moment.time = setDay(clone(date), moment.day);
+    // copy either date or from time
+    moment.time = clone(
+      sameDate(date, moment.time) && hourlyMoment.date
+        ? hourlyMoment.date
+        : hourlyMoment.from
+    );
 
-		// if so get first valid date and use that for time
-		const hourlyMoment = toHourlyMoment(moment.time, string);
+    // test if has already passed, if so, set to hourly from for next week
+    let dist = moment.time - date;
 
-		// waiting
-		if (hourlyMoment.wait) {
-			return moment;
-		}
+    if (dist < 0) {
+      moment.time.setDate(moment.time.getDate() + 7);
+    }
 
-		// copy either date or from time
-		moment.time = clone(sameDate(date, moment.time) && hourlyMoment.date ? hourlyMoment.date : hourlyMoment.from);
+    moment.dist = dist;
+  } else {
+    // correct time to set week day
+    moment.time = setDay(moment.time, moment.day);
 
-		// test if has already passed, if so, set to hourly from for next week
-		let dist = moment.time - date;
+    let dist = moment.time - date;
+    if (dist < 0) {
+      moment.time.setDate(moment.time.getDate() + 7);
+      dist = moment.time - date;
+    }
 
-		if (dist < 0) {
-			moment.time.setDate(moment.time.getDate() + 7);
-		}
+    // if is idling
+    if (moment.idle !== null && dist >= TimeUnit.Week - moment.idle) {
+      moment.wait = true;
+      return moment;
+    }
 
-		moment.dist = dist;
-	}
-	else {
+    moment.dist = dist;
+  }
 
-		// correct time to set week day
-		moment.time = setDay(moment.time, moment.day);
+  moment.date = clone(moment.time);
 
-		let dist = moment.time - date;
-		if (dist < 0) {
-			moment.time.setDate(moment.time.getDate() + 7);
-			dist = moment.time - date;
-		}
-
-		// if is idling
-		if (moment.idle !== null && dist >= TimeUnit.Week - moment.idle) {
-			moment.wait = true;
-			return moment;
-		}
-
-		moment.dist = dist;
-	}
-
-	moment.date = clone(moment.time);
-
-	return moment;
+  return moment;
 };
 
 const toDailyMoment = (date, string) => {
-	// - every day at 10
-	// - every day at 14:00
-	// - every day at 14:30 wait 5 minutes
+  // - every day at 10
+  // - every day at 14:00
+  // - every day at 14:30 wait 5 minutes
 
-	// get parts
-	const parts = string.match(/([\d]+(?::[\d]+)?(?::[\d]+)?)|(wait\s[\d]+\s[a-z]+)/g);
+  // get parts
+  const parts = string.match(
+    /([\d]+(?::[\d]+)?(?::[\d]+)?)|(wait\s[\d]+\s[a-z]+)/g
+  );
 
-	// to moment object
-	const moment = parts.reduce((obj, part) => {
+  // to moment object
+  const moment = parts.reduce(
+    (obj, part) => {
+      // if is time
+      if (/^[\d]/.test(part)) {
+        obj.time = toTime(clone(date), part);
+      }
 
-		// if is time
-		if (/^[\d]/.test(part)) {
-			obj.time = toTime(clone(date), part);
-		}
+      // is waiting period
+      else if (/wait/.test(part)) {
+        obj.idle = toInterval(part.substring(5));
+      }
 
-		// is waiting period
-		else if (/wait/.test(part)) {
-			obj.idle = toInterval(part.substr(5));
-		}
+      return obj;
+    },
+    {
+      idle: null,
+      time: null,
+      date: null,
+      wait: false,
+      dist: null,
+    }
+  );
 
-		return obj;
-	},{
-		idle: null,
-		time: null,
-		date: null,
-		wait: false,
-		dist: null
-	});
+  let dist = moment.time - date;
 
-	let dist = moment.time - date;
+  // if time dist is negative set time to tomorrow
+  if (dist < 0) {
+    moment.time.setDate(moment.time.getDate() + 1);
+    dist = moment.time - date;
+  }
 
-	// if time dist is negative set time to tomorrow
-	if (dist < 0) {
-		moment.time.setDate(moment.time.getDate() + 1);
-		dist = moment.time - date;
-	}
+  // test if wait period has passed
+  if (moment.idle !== null && dist >= TimeUnit.Day - moment.idle) {
+    moment.wait = true;
+    return moment;
+  }
 
-	// test if wait period has passed
-	if (moment.idle !== null && dist >= TimeUnit.Day - moment.idle) {
-		moment.wait = true;
-		return moment;
-	}
+  moment.dist = dist;
+  moment.date = clone(moment.time);
 
-	moment.dist = dist;
-	moment.date = clone(moment.time);
-
-	return moment;
+  return moment;
 };
 
 const toHourlyMoment = (date, string) => {
+  // - from 10 till 20 every hour wait 5 minutes
+  // - from 10:00:00 till 14:00 every 15 minutes
+  // - every hour
+  // - every 20 minutes
+  // - every 30 seconds
 
-	// - from 10 till 20 every hour wait 5 minutes
-	// - from 10:00:00 till 14:00 every 15 minutes
-	// - every hour
-	// - every 20 minutes
-	// - every 30 seconds
+  // get parts
+  const parts = string.match(
+    /((?:[\d]+\s)?(?:hours|hour|minutes|minute|seconds|second))|((?:from|till)\s[\d]+(?::[\d]+)?(?::[\d]+)?)|(wait\s[\d]+\s[a-z]+)/g
+  );
 
-	// get parts
-	const parts = string.match(/((?:[\d]+\s)?(?:hours|hour|minutes|minute|seconds|second))|((?:from|till)\s[\d]+(?::[\d]+)?(?::[\d]+)?)|(wait\s[\d]+\s[a-z]+)/g);
+  // to moment object
+  const moment = parts.reduce(
+    (obj, part) => {
+      // if is time
+      if (/from/.test(part)) {
+        obj.from = toTime(obj.from, part.split(" ")[1]);
+      } else if (/till/.test(part)) {
+        obj.till = toTime(obj.till, part.split(" ")[1]);
+      }
 
-	// to moment object
-	const moment = parts.reduce((obj, part) => {
+      // is waiting period
+      else if (/wait/.test(part)) {
+        obj.idle = toInterval(part.substring(5));
+      }
 
-		// if is time
-		if (/from/.test(part)) {
-			obj.from = toTime(obj.from, part.split(' ')[1]);
-		}
+      // if is interval
+      else if (/hours|hour|minutes|minute|seconds|second/.test(part)) {
+        obj.interval = toInterval(part);
+      }
 
-		else if (/till/.test(part)) {
-			obj.till = toTime(obj.till, part.split(' ')[1]);
-		}
+      return obj;
+    },
+    {
+      idle: null,
+      interval: null,
+      date: null,
+      dist: null,
+      wait: false,
+      from: toTime(clone(date), "0"),
+      till: toTime(clone(date), "23:59:59:999"),
+    }
+  );
 
-		// is waiting period
-		else if (/wait/.test(part)) {
-			obj.idle = toInterval(part.substr(5));
-		}
+  // if valid moment
+  if (date < moment.from || date >= moment.till) {
+    return moment;
+  }
 
-		// if is interval
-		else if (/hours|hour|minutes|minute|seconds|second/.test(part)) {
-			obj.interval = toInterval(part);
-		}
+  // calculate if interval fits in duration
+  if (moment.interval > moment.till - moment.from) {
+    return moment;
+  }
 
-		return obj;
-	},{
-		idle: null,
-		interval: null,
-		date: null,
-		dist: null,
-		wait: false,
-		from: toTime(clone(date), '0'),
-		till: toTime(clone(date), '23:59:59:999')
-	});
+  // time passed since start of moment
+  const diff = date - moment.from;
 
-	// if valid moment
-	if (date < moment.from || date >= moment.till) {
-		return moment;
-	}
+  // interval duration minus all intervals that fitted in the passed time since start
+  // 200 - (diff % interval)
+  // 200 - (1450 % 200)
+  // 200 - 50
+  // 150 till next moment
+  const dist = moment.interval - (diff % moment.interval);
 
-	// calculate if interval fits in duration
-	if (moment.interval > moment.till - moment.from) {
-		return moment;
-	}
+  // test if wait period has passed
+  if (moment.idle !== null && dist >= moment.interval - moment.idle) {
+    moment.wait = true;
+    return moment;
+  }
 
-	// time passed since start of moment
-	const diff = date - moment.from;
+  // set as final distance
+  moment.dist = dist;
 
-	// interval duration minus all intervals that fitted in the passed time since start
-	// 200 - (diff % interval)
-	// 200 - (1450 % 200)
-	// 200 - 50
-	// 150 till next moment
-	const dist = moment.interval - (diff % moment.interval);
+  // turn into date by adding to current time
+  moment.date = new Date(date.getTime() + moment.dist);
 
-	// test if wait period has passed
-	if (moment.idle !== null && dist >= moment.interval - moment.idle) {
-		moment.wait = true;
-		return moment;
-	}
-
-	// set as final distance
-	moment.dist = dist;
-
-	// turn into date by adding to current time
-	moment.date = new Date(date.getTime() + moment.dist);
-
-	return moment;
+  return moment;
 };
 
 const toMoment = (date, string) => {
+  // test yearly schedules
+  if (
+    /januari|februari|march|april|may|june|july|august|september|october|november|december/.test(
+      string
+    )
+  ) {
+    return toYearlyMoment(date, string);
+  }
 
-	// test yearly schedules
-	if (/januari|februari|march|april|may|june|july|august|september|october|november|december/.test(string)) {
-		return toYearlyMoment(date, string);
-	}
+  // test for monthly schedules
+  if (/month/.test(string)) {
+    return toMonthlyMoment(date, string);
+  }
 
-	// test for monthly schedules
-	if (/month/.test(string)) {
-		return toMonthlyMoment(date, string);
-	}
+  // test for weekly schedules
+  if (/(?:mon|tues|wednes|thurs|fri|satur|sun)day/.test(string)) {
+    return toWeeklyMoment(date, string);
+  }
 
-	// test for weekly schedules
-	if (/(?:mon|tues|wednes|thurs|fri|satur|sun)day/.test(string)) {
-		return toWeeklyMoment(date, string);
-	}
+  // test for daily schedules
+  if (/day at/.test(string) || /^at /.test(string)) {
+    return toDailyMoment(date, string);
+  }
 
-	// test for daily schedules
-	if (/day at/.test(string) || /^at /.test(string)) {
-		return toDailyMoment(date, string);
-	}
+  // test for hourly schedules
+  if (/hours|hour|minutes|minute|seconds|second/.test(string)) {
+    return toHourlyMoment(date, string);
+  }
 
-	// test for hourly schedules
-	if (/hours|hour|minutes|minute|seconds|second/.test(string)) {
-		return toHourlyMoment(date, string);
-	}
-
-	return null;
+  return null;
 };
 
 export const getNextScheduledDate = (date, schedule) => {
+  // create moments
+  const moments = schedule
+    .split(",")
+    .map(trim) // remove whitespace
+    .map((s) => toMoment(date, s)); // string to moment in time
 
-	// create moments
-	const moments = schedule.split(',')
-		.map(trim) // remove whitespace
-		.map(s => toMoment(date, s)); // string to moment in time
+  // calculate closest moment
+  let nearest = null;
 
-	// calculate closest moment
-	let nearest = null;
-	
-	for (let i =0;i<moments.length;i++) {
+  for (let i = 0; i < moments.length; i++) {
+    const moment = moments[i];
 
-		const moment = moments[i];
+    // currently waiting
+    if (nearest === null && moment.wait) {
+      return null;
+    }
 
-		// currently waiting
-		if (nearest === null && moment.wait) {
-			return null;
-		}
+    if (nearest === null) {
+      nearest = moment;
+    } else if (nearest.dist === null && moment.dist !== null) {
+      nearest = moment;
+    } else if (moment.dist !== null && moment.dist < nearest.dist) {
+      nearest = moment;
+    }
+  }
 
-		if (nearest === null) {
-			nearest = moment;
-		}
-
-		else if (nearest.dist === null && moment.dist !== null) {
-			nearest = moment;
-		}
-		
-		else if (moment.dist !== null && moment.dist < nearest.dist) {
-			nearest = moment;
-		}
-	}
-
-
-	// return nearest date
-	return nearest.date;
+  // return nearest date
+  return nearest.date;
 };
