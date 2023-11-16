@@ -1,76 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width">
-    <title>Tick Example Preset</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Tick Example Preset</title>
 
-    <link rel="stylesheet" href="../dist/core/tick.core.min.css">
-    <link rel="stylesheet" href="../dist/view-swap/tick.view.swap.min.css">
+        <link rel="stylesheet" href="../dist/core/tick.core.min.css" />
+        <link rel="stylesheet" href="../dist/view-swap/tick.view.swap.min.css" />
+    </head>
+    <body>
+        <!-- START OF TICK EXAMPLE PRESET -->
 
-</head>
-<body>
+        <style>
+            .tick {
+                font-size: 1rem;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans,
+                    Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+            }
 
-<!-- START OF TICK EXAMPLE PRESET -->
+            .tick-label {
+                font-size: 0.375em;
+                text-align: center;
+            }
 
-<style>
-    .tick {
-        font-size:1rem;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-    }
-    
-    .tick-label {
-        font-size:.375em;
-        text-align:center;
-    }
+            .tick-group {
+                margin: 0 0.25em;
+                text-align: center;
+            }
 
-    .tick-group {
-        margin:0 .25em;
-        text-align:center;
-    }
+            .tick-value {
+                font-variant-numeric: tabular-nums;
+                -webkit-font-feature-settings: 'tnum';
+                font-feature-settings: 'tnum';
+                font-family: Tahoma, Geneva, Verdana, sans-serif;
+            }
+        </style>
 
-    .tick-value {
-        font-variant-numeric: tabular-nums;
-        -webkit-font-feature-settings: "tnum";
-        font-feature-settings: "tnum";
-        font-family: Tahoma,Geneva,Verdana,sans-serif;
-    }
-</style>
+        <div class="tick" data-did-init="handleTickInit">
+            <div
+                data-repeat="true"
+                data-layout="horizontal center fit"
+                data-transform="preset(d, h, m, s) -> delay"
+            >
+                <div class="tick-group">
+                    <div
+                        data-key="value"
+                        data-repeat="true"
+                        data-transform="pad(00) -> split -> delay"
+                    >
+                        <span class="tick-value" data-view="swap"></span>
+                    </div>
 
-<div class="tick"
-     data-did-init="handleTickInit">
-
-    <div data-repeat="true"
-         data-layout="horizontal center fit"
-         data-transform="preset(d, h, m, s) -> delay">
-
-        <div class="tick-group">
-
-            <div data-key="value"
-                 data-repeat="true"
-                 data-transform="pad(00) -> split -> delay">
-
-                <span class="tick-value" data-view="swap"></span>
-
+                    <span data-key="label" data-view="text" class="tick-label"></span>
+                </div>
             </div>
-
-            <span data-key="label"
-                  data-view="text"
-                  class="tick-label"></span>
-
         </div>
 
-    </div>
-
-</div>
-
-<script>
-	function handleTickInit(tick) {
-
-        // Uncomment to set labels to different language ( in this case Dutch )
-        /*
+        <script>
+            function handleTickInit(tick) {
+                // Uncomment to set labels to different language ( in this case Dutch )
+                /*
         var locale = {
             YEAR_PLURAL: 'Jaren',
             YEAR_SINGULAR: 'Jaar',
@@ -96,19 +85,17 @@
         }
         */
 
-        var nextYear = (new Date()).getFullYear() + 1;
-        
-		Tick.count.down(nextYear + '-01-01').onupdate = function(value) {
-			tick.value = value;
-        };
+                var nextYear = new Date().getFullYear() + 1;
 
-	}
-</script>
+                Tick.count.down(nextYear + '-01-01').onupdate = function (value) {
+                    tick.value = value;
+                };
+            }
+        </script>
 
-<!-- END OF TICK EXAMPLE PRESET -->
+        <!-- END OF TICK EXAMPLE PRESET -->
 
-<script src="../dist/view-swap/tick.view.swap.global.min.js"></script>
-<script src="../dist/core/tick.core.kickstart.min.js"></script>
-
-</body>
+        <script src="../dist/view-swap/tick.view.swap.global.min.js"></script>
+        <script src="../dist/core/tick.core.kickstart.min.js"></script>
+    </body>
 </html>

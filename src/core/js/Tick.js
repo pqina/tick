@@ -2,200 +2,191 @@ import { mergeObjects, presentTick, toValue } from './utils';
 import { observeAttributes } from './dom';
 import { getConstants, getPresets } from './TickDOM';
 
-
 /**
  * Tick
  */
 export default class Tick {
+    constructor(options = {}, element = document.createElement('div')) {
+        // set base configuration options
+        this._options = mergeObjects(Tick.options(), options);
 
-	constructor(options = {}, element = document.createElement('div')) {
+        // instance properties
+        this._element = element;
+        this._value = null;
+        this._observer = null;
+        this._viewDefinition = null;
+        this._constants = null;
+        this._presets = null;
+        this._updater = null;
+        this._credits = null;
 
-		// set base configuration options
-		this._options = mergeObjects(Tick.options(), options);
+        // callback methods
+        this._didInit = null;
+        this._didDestroy = null;
+        this._willDestroy = null;
+        this._didUpdate = null;
 
-		// instance properties
-		this._element = element;
-		this._value = null;
-		this._observer = null;
-		this._viewDefinition = null;
-		this._constants = null;
-		this._presets = null;
-		this._updater = null;
-		this._credits = null;
+        // initialise Tick
+        this._init();
+    }
 
-		// callback methods
-		this._didInit = null;
-		this._didDestroy = null;
-		this._willDestroy = null;
-		this._didUpdate = null;
+    /**
+     * Default options for this control
+     */
+    static options() {
+        return {
+            constants: getConstants(),
+            presets: getPresets(),
+            value: null,
+            view: null,
+            didInit: (tick) => {},
+            didUpdate: (tick, value) => {},
+            willDestroy: (tick) => {},
+            didDestroy: (tick) => {},
+            credits: {
+                label: 'Powered by PQINA',
+                url: 'https://pqina.nl/?ref=credits',
+            },
+        };
+    }
 
-		// initialise Tick
-		this._init();
-	}
+    /**
+     * Public Properties
+     */
+    get baseDefinition() {
+        return this._viewDefinition;
+    }
 
-	/**
-	 * Default options for this control
-	 */
-	static options() {
-		return {
-			constants: getConstants(),
-			presets: getPresets(),
-			value: null,
-			view: null,
-			didInit: (tick) => {},
-			didUpdate: (tick, value) => {},
-			willDestroy: (tick) => {},
-			didDestroy: (tick) => {},
-			credits: {
-				label: 'Powered by PQINA',
-				url: 'https://pqina.nl/?ref=credits'
-			}
-		}
-	}
+    get root() {
+        return this._element;
+    }
 
-	/**
-	 * Public Properties
-	 */
-	get baseDefinition() {
-		return this._viewDefinition;
-	}
+    get value() {
+        return this._value;
+    }
 
-	get root() {
-		return this._element;
-	}
+    set value(value) {
+        this._value = typeof value === 'string' ? toValue(value) : value;
+        this._update(value);
+    }
 
-	get value() {
-		return this._value;
-	}
+    /**
+     * Public API
+     */
+    isRootElement(element) {
+        return this._element === element;
+    }
 
-	set value(value) {
-		this._value = typeof value === 'string' ? toValue(value) : value;
-		this._update(value);
-	}
+    setConstant(key, value) {
+        this._constants[key] = value;
+    }
 
-	/**
-	 * Public API
-	 */
-	isRootElement(element) {
-		return this._element === element;
-	}
+    getConstants() {
+        return this._constants;
+    }
 
-	setConstant(key, value) {
-		this._constants[key] = value;
-	}
+    getConstant(key) {
+        return this._constants[key];
+    }
 
-	getConstants() {
-		return this._constants;
-	}
+    setPreset(key, fn) {
+        this._presets[key] = fn;
+    }
 
-	getConstant(key) {
-		return this._constants[key];
-	}
+    getPreset(key) {
+        return this._presets[key];
+    }
 
-	setPreset(key, fn) {
-		this._presets[key] = fn;
-	}
+    destroy() {
+        this._willDestroy(this);
 
-	getPreset(key) {
-		return this._presets[key];
-	}
+        // clean up
+        this._observer.disconnect();
 
-	destroy() {
-		this._willDestroy(this);
+        // destroy presenters
+        this.baseDefinition.presenter.destroy();
 
-		// clean up
-		this._observer.disconnect();
+        this._didDestroy(this);
+    }
 
-		// destroy presenters
-		this.baseDefinition.presenter.destroy();
+    redraw() {
+        if (!this.baseDefinition || !this.baseDefinition.presenter) return;
+        this.baseDefinition.presenter.reset();
+        this.baseDefinition.presenter.draw();
+        this._updater(this.baseDefinition, this._value);
+    }
 
-		this._didDestroy(this);
-	}
+    /**
+     * Private Methods
+     */
+    _init() {
+        // move options to properties
+        this._viewDefinition = this._options.view;
+        this._willDestroy = this._options.willDestroy;
+        this._didDestroy = this._options.didDestroy;
+        this._didInit = this._options.didInit;
+        this._didUpdate = this._options.didUpdate;
+        this._value = this._options.value;
+        this._presets = this._options.presets;
+        this._constants = this._options.constants;
+        this._credits = this._options.credits;
 
-	redraw() {
-		if (!this.baseDefinition || !this.baseDefinition.presenter) return;
-		this.baseDefinition.presenter.reset();
-		this.baseDefinition.presenter.draw();
-		this._updater(this.baseDefinition, this._value);
-	}
+        // no more use of options behind this line
+        // ---------------------------------------
 
+        // always add class tick to element (make sure it's only added once)
+        if (!this._element.classList.contains('tick')) {
+            this._element.classList.add('tick');
+        }
 
-	/**
-	 * Private Methods
-	 */
-	_init() {
+        // use mutation observer to detect changes to value attribute
+        this._observer = observeAttributes(this._element, ['data-value'], (value) => {
+            this.value = value;
+        });
 
-		// move options to properties
-		this._viewDefinition = this._options.view;
-		this._willDestroy = this._options.willDestroy;
-		this._didDestroy = this._options.didDestroy;
-		this._didInit = this._options.didInit;
-		this._didUpdate = this._options.didUpdate;
-		this._value = this._options.value;
-		this._presets = this._options.presets;
-		this._constants = this._options.constants;
-		this._credits = this._options.credits;
+        // force default view root, move children of current root to this element
+        if (this._viewDefinition.root !== this._element) {
+            Array.from(this._viewDefinition.root.children).forEach((node) => {
+                this._element.appendChild(node);
+            });
+            this._viewDefinition.root = this._element;
+        }
 
-		// no more use of options behind this line
-		// ---------------------------------------
+        // no default view presenter defined, fallback to text
+        if (!this._viewDefinition.view && !this._viewDefinition.children) {
+            this._viewDefinition.view = 'text';
+        }
 
-		// always add class tick to element (make sure it's only added once)
-		if (!this._element.classList.contains('tick')) {
-			this._element.classList.add('tick');
-		}
+        // setup root presenter
+        this._updater = presentTick(this);
 
-		// use mutation observer to detect changes to value attribute
-		this._observer = observeAttributes(this._element, ['data-value'], (value) => {
-			this.value = value;
-		});
+        // update for first time
+        if (this.value !== null) {
+            this._update(this.value);
+        }
 
-		// force default view root, move children of current root to this element
-		if (this._viewDefinition.root !== this._element) {
-			Array.from(this._viewDefinition.root.children).forEach((node) => {
-				this._element.appendChild(node);
-			});
-			this._viewDefinition.root = this._element;
-		}
+        // set to ready state
+        this._element.dataset.state = 'initialised';
 
-		// no default view presenter defined, fallback to text
-		if (!this._viewDefinition.view && !this._viewDefinition.children) {
-			this._viewDefinition.view = 'text';
-		}
+        // done with init
+        this._didInit(this, this.value);
 
-		// setup root presenter
-		this._updater = presentTick(this);
+        // credits
+        if (this._credits) {
+            const credits = document.createElement('a');
+            credits.className = 'tick-credits';
+            credits.href = this._credits.url;
+            credits.tabindex = -1;
+            credits.target = '_blank';
+            credits.rel = 'noopener noreferrer';
+            credits.textContent = this._credits.label;
+            this._element.appendChild(credits);
+        }
+    }
 
-		// update for first time
-		if (this.value !== null) {
-			this._update(this.value);
-		}
+    _update(value) {
+        this._updater(this.baseDefinition, value);
 
-		// set to ready state
-		this._element.dataset.state = 'initialised';
-
-		// done with init
-		this._didInit(this, this.value);
-
-		// credits
-		if (this._credits) {
-			const credits = document.createElement('a');
-			credits.className = 'tick-credits';
-			credits.href = this._credits.url;
-			credits.tabindex = -1;
-			credits.target = '_blank';
-			credits.rel = 'noopener noreferrer';
-			credits.textContent = this._credits.label;
-			this._element.appendChild(credits);
-		}
-		
-	}
-
-	_update(value) {
-
-		this._updater(this.baseDefinition, value);
-
-		this._didUpdate(this, value);
-
-	}
-
+        this._didUpdate(this, value);
+    }
 }
