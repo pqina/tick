@@ -178,7 +178,7 @@ export default class Tick {
             credits.href = this._credits.url;
             credits.tabindex = -1;
             credits.target = '_blank';
-            credits.rel = 'noopener noreferrer';
+            credits.rel = 'noopener noreferrer nofollow';
             credits.textContent = this._credits.label;
             this._element.appendChild(credits);
         }

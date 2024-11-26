@@ -1,6 +1,6 @@
 {
     "name": "@pqina/tick",
-    "version": "1.8.2",
+    "version": "1.8.3",
     "description": "Counters Made Easy",
     "homepage": "https://github.com/pqina/tick/",
     "main": "dist/core/tick.core.module.js",
